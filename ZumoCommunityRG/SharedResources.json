@@ -29,18 +29,18 @@
 
 		"AppServicePlan-Name": "[concat('WebFarm-', parameters('Environment-Name'))]",
 
-		"ContentStorage-Name": "[toLower(concat('ContentStrg', parameters('Environment-Name'), variables('UniqueId')))]",
+		"ContentStorage-Name": "[take(toLower(concat('content', parameters('Environment-Name'), variables('UniqueId'))), 24)]",
 		"ContentStorage-Type": "Standard_LRS",
 
-		"DataStorage-Name": "[toLower(concat('DataStrg', parameters('Environment-Name'), variables('UniqueId')))]",
+		"DataStorage-Name": "[take(toLower(concat('data', parameters('Environment-Name'), variables('UniqueId'))), 24)]",
 		"DataStorage-Type": "Standard_LRS",
 
 		"CdnProfile-Name": "[concat('CdnProfile-', parameters('Environment-Name'))]",
 
 		"CdnEndpoint-Name": "[concat('CdnEndpoint-', parameters('Environment-Name'), '-', variables('UniqueId'))]",
-		"CdnEndpoint-OriginUrl": "[concat('http://', variables('ContentStorage-Name'), '.blob.core.windows.net')]",
+		"CdnEndpoint-OriginUrl": "[concat(variables('ContentStorage-Name'), '.blob.core.windows.net')]",
 
-		"SqlServer-Name": "[concat('sqlserver-', parameters('Environment-Name'), '-', variables('UniqueId') )]"
+		"SqlServer-Name": "[toLower(concat('sqlserver-', parameters('Environment-Name'), '-', variables('UniqueId')))]"
 	},
 	"resources": [
 		{
