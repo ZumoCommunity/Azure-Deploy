@@ -33,6 +33,7 @@
     <Content Include="Deploy-AzureResourceGroup.ps1" />
     <None Include="MeetupAPI\MeetupAPI.json" />
     <None Include="MeetupAPI\MeetupAPI.parameters.json" />
+    <None Include="MeetupPortal\MeetupPortal.json" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>
