@@ -77,7 +77,7 @@
 					"properties": {
 						"Database": {
 							"type": "SQLAzure",
-							"value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('SqlServer-Name'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('MeetupDB-Name'), ';User Id=', parameters('SqlServer-Login'), '@', reference(concat('Microsoft.Sql/servers/', variables('SqlServer-Name'))).fullyQualifiedDomainName, ';Password=', parameters('SqlServer-Password'), ';')]"
+							"value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('SqlServer-Name')), '2014-04-01-preview').fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('MeetupDB-Name'), ';User Id=', parameters('SqlServer-Login'), '@', reference(concat('Microsoft.Sql/servers/', variables('SqlServer-Name')), '2014-04-01-preview').fullyQualifiedDomainName, ';Password=', parameters('SqlServer-Password'), ';')]"
 						}
 					}
 				},
