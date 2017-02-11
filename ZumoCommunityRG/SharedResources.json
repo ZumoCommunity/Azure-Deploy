@@ -15,14 +15,14 @@
 				"S1"
 			]
 		},
-		 "SqlServer-Login": {
-			 "type": "string",
-			 "minLength": 3
-		 },
-		 "SqlServer-Password": {
-			"type": "securestring",
-			"minLength": 6
-		 }
+		"SqlServer-Login": {
+			"type": "string",
+			"minLength": 3
+		},
+		"SqlServer-Password": {
+		"type": "securestring",
+		"minLength": 6
+		}
 	},
 	"variables": {
 		"UniqueId": "[uniqueString(resourceGroup().id)]",
