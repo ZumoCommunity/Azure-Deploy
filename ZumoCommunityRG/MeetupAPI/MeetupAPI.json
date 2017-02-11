@@ -1,0 +1,121 @@
+﻿{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"Environment-Name": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 10
+		},
+		"MeetupDB-Edition": {
+			"type": "string",
+			"defaultValue": "Basic",
+			"allowedValues": [
+				"Basic",
+				"Standard"
+			]
+		},
+		"MeetupDB-Sku": {
+			"type": "string",
+			"defaultValue": "Basic",
+			"allowedValues": [
+				"Basic",
+				"S0"
+			],
+			"metadata": {
+				"description": "Describes the performance level for Edition"
+			}
+		},
+		"SqlServer-Login": {
+			"type": "string",
+			"minLength": 3
+		},
+		"SqlServer-Password": {
+			"type": "securestring",
+			"minLength": 6
+		}
+	},
+	"variables": {
+		"UniqueId": "[uniqueString(resourceGroup().id)]",
+
+		"AppServicePlan-Name": "[concat('WebFarm-', parameters('Environment-Name'))]",
+
+		"SqlServer-Name": "[toLower(concat('sqlserver-', parameters('Environment-Name'), '-', variables('UniqueId')))]",
+
+		"MeetupAPI-Name": "[concat('MeetupAPI-', parameters('Environment-Name'))]",
+
+		"MeetupDB-Name": "MeetupAPI-DB",
+		"MeetupDB-Collation": "SQL_Latin1_General_CP1_CI_AS"
+	},
+	"resources": [
+		{
+			"name": "[variables('MeetupAPI-Name')]",
+			"type": "Microsoft.Web/sites",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2015-08-01",
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/serverfarms', variables('AppServicePlan-Name'))]"
+			],
+			"tags": {
+				"[concat('hidden-related:', resourceId(resourceGroup().name, 'Microsoft.Web/serverfarms', variables('AppServicePlan-Name')))]": "Resource",
+				"displayName": "MeetupAPI"
+			},
+			"properties": {
+				"name": "[variables('MeetupAPI-Name')]",
+				"serverFarmId": "[resourceId(resourceGroup().name, 'Microsoft.Web/serverfarms', variables('AppServicePlan-Name'))]"
+			},
+			"resources": [
+				{
+					"name": "connectionstrings",
+					"type": "config",
+					"apiVersion": "2015-08-01",
+					"dependsOn": [
+						"[resourceId('Microsoft.Web/sites', variables('MeetupApi-Name'))]"
+					],
+					"tags": {
+						"displayName": "ConnectionStrings"
+					},
+					"properties": {
+						"Database": {
+							"type": "SQLAzure",
+							"value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('SqlServer-Name'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('MeetupDB-Name'), ';User Id=', parameters('SqlServer-Login'), '@', reference(concat('Microsoft.Sql/servers/', variables('SqlServer-Name'))).fullyQualifiedDomainName, ';Password=', parameters('SqlServer-Password'), ';')]"
+						}
+					}
+				},
+				{
+					"name": "appsettings",
+					"type": "config",
+					"apiVersion": "2015-08-01",
+					"dependsOn": [
+						"[resourceId('Microsoft.Web/sites', variables('MeetupApi-Name'))]"
+					],
+					"tags": {
+						"displayName": "ApplicationSettings"
+					},
+					"properties": {
+					}
+				}
+			]
+		},
+		{
+			"name": "[concat(variables('SqlServer-Name'), '/', variables('MeetupDB-Name'))]",
+			"type": "Microsoft.Sql/servers/databases",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2014-04-01-preview",
+			"dependsOn": [
+				"[resourceId('Microsoft.Sql/servers', variables('SqlServer-Name'))]"
+			],
+			"tags": {
+				"displayName": "MeetupAPI-DB"
+			},
+			"properties": {
+				"collation": "[variables('MeetupDB-Collation')]",
+				"edition": "[parameters('MeetupDB-Edition')]",
+				"maxSizeBytes": "2147483648",
+				"requestedServiceObjectiveName": "[parameters('MeetupDB-Sku')]"
+			}
+		}
+	],
+	"outputs": {
+	}
+}
