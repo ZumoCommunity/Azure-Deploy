@@ -54,7 +54,6 @@
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2015-08-01",
 			"dependsOn": [
-				"[resourceId('Microsoft.Web/serverfarms', variables('AppServicePlan-Name'))]"
 			],
 			"tags": {
 				"[concat('hidden-related:', resourceId(resourceGroup().name, 'Microsoft.Web/serverfarms', variables('AppServicePlan-Name')))]": "Resource",
@@ -103,7 +102,6 @@
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2014-04-01-preview",
 			"dependsOn": [
-				"[resourceId('Microsoft.Sql/servers', variables('SqlServer-Name'))]"
 			],
 			"tags": {
 				"displayName": "MeetupAPI-DB"
