@@ -74,7 +74,7 @@
 			}
 		},
 		{
-			"name": "[variables('ContentStorage-Name')]",
+			"name": "[variables('DataStorage-Name')]",
 			"type": "Microsoft.Storage/storageAccounts",
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2015-06-15",
@@ -83,7 +83,7 @@
 				"displayName": "DataStorage"
 			},
 			"properties": {
-				"accountType": "[variables('ContentStorage-Type')]"
+				"accountType": "[variables('DataStorage-Type')]"
 			}
 		},
 		{
