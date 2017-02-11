@@ -1,0 +1,169 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+	"parameters": {
+		"Environment-Name": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 10
+		},
+		"AppServicePlan-Sku": {
+			"type": "string",
+			"defaultValue": "B1",
+			"allowedValues": [
+				"B1",
+				"S1"
+			]
+		},
+		 "SqlServer-Login": {
+			 "type": "string",
+			 "minLength": 3
+		 },
+		 "SqlServer-Password": {
+			"type": "securestring",
+			"minLength": 6
+		 }
+	},
+	"variables": {
+		"UniqueId": "[uniqueString(resourceGroup().id)]",
+
+		"AppServicePlan-Name": "[concat('WebFarm-', parameters('Environment-Name'))]",
+
+		"ContentStorage-Name": "[toLower(concat('ContentStrg', parameters('Environment-Name'), variables('UniqueId')))]",
+		"ContentStorage-Type": "Standard_LRS",
+
+		"DataStorage-Name": "[toLower(concat('DataStrg', parameters('Environment-Name'), variables('UniqueId')))]",
+		"DataStorage-Type": "Standard_LRS",
+
+		"CdnProfile-Name": "[concat('CdnProfile-', parameters('Environment-Name'))]",
+
+		"CdnEndpoint-Name": "[concat('CdnEndpoint-', parameters('Environment-Name'), '-', variables('UniqueId'))]",
+		"CdnEndpoint-OriginUrl": "[concat('http://', variables('ContentStorage-Name'), '.blob.core.windows.net')]",
+
+		"SqlServer-Name": "[concat('sqlserver-', parameters('Environment-Name'), '-', variables('UniqueId') )]"
+	},
+	"resources": [
+		{
+			"name": "[variables('AppServicePlan-Name')]",
+			"type": "Microsoft.Web/serverfarms",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2015-08-01",
+			"sku": {
+				"name": "[parameters('AppServicePlan-Sku')]"
+			},
+			"dependsOn": [],
+			"tags": {
+				"displayName": "AppServicePlan"
+			},
+			"properties": {
+				"name": "[variables('AppServicePlan-Name')]",
+				"numberOfWorkers": 1
+			}
+		},
+		{
+			"name": "[variables('ContentStorage-Name')]",
+			"type": "Microsoft.Storage/storageAccounts",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2015-06-15",
+			"dependsOn": [],
+			"tags": {
+				"displayName": "ContentStorage"
+			},
+			"properties": {
+				"accountType": "[variables('ContentStorage-Type')]"
+			}
+		},
+		{
+			"name": "[variables('ContentStorage-Name')]",
+			"type": "Microsoft.Storage/storageAccounts",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2015-06-15",
+			"dependsOn": [],
+			"tags": {
+				"displayName": "DataStorage"
+			},
+			"properties": {
+				"accountType": "[variables('ContentStorage-Type')]"
+			}
+		},
+		{
+			"name": "[variables('CdnProfile-Name')]",
+			"type": "Microsoft.Cdn/profiles",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2016-04-02",
+			"sku": {
+				"name": "Standard_Verizon"
+			},
+			"dependsOn": [],
+			"tags": {
+				"displayName": "CdnProfile"
+			},
+			"resources": [
+				{
+					"name": "[variables('CdnEndpoint-Name')]",
+					"type": "endpoints",
+					"location": "[resourceGroup().location]",
+					"apiVersion": "2016-04-02",
+					"dependsOn": [
+						"[resourceId('Microsoft.Cdn/profiles', variables('CdnProfile-Name'))]"
+					],
+					"tags": {
+						"displayName": "CdnEndpoint"
+					},
+					"properties": {
+						"originHostHeader": "[variables('CdnEndpoint-OriginUrl')]",
+						"isHttpAllowed": true,
+						"isHttpsAllowed": true,
+						"queryStringCachingBehavior": "IgnoreQueryString",
+						"contentTypesToCompress": [
+							"text/plain",
+							"text/html",
+							"text/css",
+							"application/x-javascript",
+							"text/javascript"
+						],
+						"isCompressionEnabled": "True",
+						"origins": [
+							{
+								"name": "origin1",
+								"properties": {
+									"hostName": "[variables('CdnEndpoint-OriginUrl')]"
+								}
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "[variables('SqlServer-Name')]",
+			"type": "Microsoft.Sql/servers",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2014-04-01-preview",
+			"dependsOn": [],
+			"tags": {
+				"displayName": "SqlServer"
+			},
+			"properties": {
+				"administratorLogin": "[parameters('SqlServer-Login')]",
+				"administratorLoginPassword": "[parameters('SqlServer-Password')]"
+			},
+			"resources": [
+				{
+					"name": "AllowAllWindowsAzureIps",
+					"type": "firewallrules",
+					"location": "[resourceGroup().location]",
+					"apiVersion": "2014-04-01-preview",
+					"dependsOn": [
+						"[resourceId('Microsoft.Sql/servers', variables('SqlServer-Name'))]"
+					],
+					"properties": {
+						"startIpAddress": "0.0.0.0",
+						"endIpAddress": "0.0.0.0"
+					}
+				}
+			]
+		}
+	],
+	"outputs": {}
+}
