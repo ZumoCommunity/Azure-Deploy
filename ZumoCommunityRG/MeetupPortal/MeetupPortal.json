@@ -6,6 +6,10 @@
 			"type": "string",
 			"minLength": 1,
 			"maxLength": 10
+		},
+		"MasterApiKey": {
+			"type": "securestring",
+			"minLength": 6
 		}
 	},
 	"variables": {
@@ -56,6 +60,7 @@
 						"displayName": "ApplicationSettings"
 					},
 					"properties": {
+						"MasterApiKey": "[parameters('MasterApiKey')]"
 					}
 				}
 			]

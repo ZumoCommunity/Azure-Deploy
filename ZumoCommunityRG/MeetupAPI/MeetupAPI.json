@@ -33,6 +33,10 @@
 		"SqlServer-Password": {
 			"type": "securestring",
 			"minLength": 6
+		},
+		"MasterApiKey": {
+			"type": "securestring",
+			"minLength": 6
 		}
 	},
 	"variables": {
@@ -92,6 +96,7 @@
 						"displayName": "ApplicationSettings"
 					},
 					"properties": {
+						"MasterApiKey": "[parameters('MasterApiKey')]"
 					}
 				}
 			]
