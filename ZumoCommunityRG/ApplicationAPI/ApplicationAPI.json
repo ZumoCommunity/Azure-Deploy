@@ -1,0 +1,75 @@
+﻿{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"Environment-Name": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 10
+		},
+		"MeetupApi-Endpoint":{
+			"type": "string"
+		},
+		"MasterApiKey": {
+			"type": "securestring",
+			"minLength": 6
+		}
+	},
+	"variables": {
+		"UniqueId": "[uniqueString(resourceGroup().id)]",
+
+		"AppServicePlan-Name": "[concat('WebFarm-', parameters('Environment-Name'))]",
+
+		"ApplicationAPI-Name": "[concat('ApplicationAPI-', parameters('Environment-Name'))]"
+	},
+	"resources": [
+		{
+			"name": "[variables('ApplicationAPI-Name')]",
+			"type": "Microsoft.Web/sites",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2015-08-01",
+			"dependsOn": [
+			],
+			"tags": {
+				"[concat('hidden-related:', resourceId(resourceGroup().name, 'Microsoft.Web/serverfarms', variables('AppServicePlan-Name')))]": "Resource",
+				"displayName": "ApplicationAPI"
+			},
+			"properties": {
+				"name": "[variables('ApplicationAPI-Name')]",
+				"serverFarmId": "[resourceId(resourceGroup().name, 'Microsoft.Web/serverfarms', variables('AppServicePlan-Name'))]"
+			},
+			"resources": [
+				{
+					"name": "connectionstrings",
+					"type": "config",
+					"apiVersion": "2015-08-01",
+					"dependsOn": [
+						"[resourceId('Microsoft.Web/sites', variables('ApplicationAPI-Name'))]"
+					],
+					"tags": {
+						"displayName": "ConnectionStrings"
+					},
+					"properties": {
+					}
+				},
+				{
+					"name": "appsettings",
+					"type": "config",
+					"apiVersion": "2015-08-01",
+					"dependsOn": [
+						"[resourceId('Microsoft.Web/sites', variables('ApplicationAPI-Name'))]"
+					],
+					"tags": {
+						"displayName": "ApplicationSettings"
+					},
+					"properties": {
+						"MasterApiKey": "[parameters('MasterApiKey')]",
+						"MeetupApiEndpoint": "[parameters('MeetupApi-Endpoint')]"
+					}
+				}
+			]
+		}
+	],
+	"outputs": {
+	}
+}
