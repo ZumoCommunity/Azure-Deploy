@@ -27,6 +27,7 @@
   <ItemGroup>
     <Content Include="SharedResources.json" />
     <Content Include="SharedResources.parameters.json" />
+    <None Include="ApplicationAPI\ApplicationAPI.json" />
     <None Include="Deployment.targets">
       <Visible>False</Visible>
     </None>

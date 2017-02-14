@@ -64,7 +64,8 @@
 					},
 					"properties": {
 						"MasterApiKey": "[parameters('MasterApiKey')]",
-						"MeetupApiEndpoint": "[parameters('MeetupApi-Endpoint')]"
+						"MeetupApiEndpoint": "[parameters('MeetupApi-Endpoint')]",
+						"WEBSITE_NODE_DEFAULT_VERSION": "6.0.0"
 					}
 				}
 			]
