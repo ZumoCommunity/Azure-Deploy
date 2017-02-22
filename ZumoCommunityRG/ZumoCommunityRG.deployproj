@@ -32,6 +32,8 @@
       <Visible>False</Visible>
     </None>
     <Content Include="Deploy-AzureResourceGroup.ps1" />
+    <None Include="IdentityAPI\IdentityAPI.json" />
+    <None Include="IdentityAPI\IdentityAPI.parameters.json" />
     <None Include="MeetupAPI\MeetupAPI.json" />
     <None Include="MeetupAPI\MeetupAPI.parameters.json" />
     <None Include="MeetupPortal\MeetupPortal.json" />
