@@ -45,7 +45,7 @@
 						"displayName": "ConnectionStrings"
 					},
 					"properties": {
-						"DefaultConnection": {
+						"ConnectionStrings__AzureStorage": {
 							"type": "Custom",
 							"value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('DataStorage-Name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('DataStorage-Name')), '2016-01-01').keys.key1, ';')]"
 						}
