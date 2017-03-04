@@ -33,7 +33,9 @@
 		"MeetupODataApiEndpoint": "[concat('http://MeetupAPI-', parameters('Environment-Name'), '/odata/v1')]",
 		"ApplicationApiEndpoint": "[concat('http://MeetupPortal-', parameters('Environment-Name'), '/api/v1')]",
 
-		"ServiceBus-Name": "[concat('ServiceBus-', parameters('Environment-Name'))]"
+		"ServiceBus-Name": "[concat('ServiceBus-', parameters('Environment-Name'))]",
+		"TopicEvents-Name": "Events",
+		"ServiceBus-SubscriptionName": "MeetupPortal"
 	},
 	"resources": [
 		{
@@ -102,66 +104,123 @@
 			]
 		},
 		{
+						"apiVersion": "2015-08-01",
+						"type": "Microsoft.Web/sites",
+						"name": "[variables('MeetupFunction-Name')]",
+						"location": "[resourceGroup().location]",
+						"kind": "functionapp",
+						"tags": {
+							"[concat('hidden-related:', resourceId(resourceGroup().name, 'Microsoft.Web/serverfarms', variables('AppServicePlan-Name')))]": "Resource",
+							"displayName": "MeetupFunction"
+						},
+						"properties": {
+							"name": "[variables('MeetupFunction-Name')]",
+							"serverFarmId": "[resourceId(resourceGroup().name, 'Microsoft.Web/serverfarms', variables('AppServicePlan-Name'))]",
+							"clientAffinityEnabled": false
+						},
+						"dependsOn": [
+						],
+						"resources": [
+							{
+								"apiVersion": "2016-03-01",
+								"name": "appsettings",
+								"type": "config",
+								"tags": {
+									"displayName": "ApplicationSettings"
+								},
+								"dependsOn": [
+									"[resourceId('Microsoft.Web/sites', variables('MeetupFunction-Name'))]"
+								],
+								"properties": {
+									"AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('DashboardStorage-Name'),';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('DashboardStorage-Name')), '2015-05-01-preview').key1,';')]",
+									"AzureWebJobsDashboard": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('DashboardStorage-Name'),';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('DashboardStorage-Name')), '2015-05-01-preview').key1,';')]",
+									"FUNCTIONS_EXTENSION_VERSION": "~1",
+
+									"MasterApiKey": "[parameters('MasterApiKey')]",
+									"Storage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('DataStorage-Name'),';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('DataStorage-Name')), '2015-05-01-preview').key1,';')]",
+									"ServiceBus": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/AuthorizationRules', variables('ServiceBus-Name'), 'ServiceBusMasterKey'), '2015-08-01').primaryConnectionString]",
+									"SaveFileApi": "[variables('SaveFileApi')]",
+									"MeetupODataApiEndpoint": "[variables('MeetupODataApiEndpoint')]",
+									"ApplicationApiEndpoint": "[variables('ApplicationApiEndpoint')]",
+									"TimeZone": "+2",
+									"GoogleMapsApiKey": "[parameters('GoogleMapsApiKey')]"
+								}
+							},
+							{
+								"name": "web",
+								"type": "config",
+								"apiVersion": "2015-08-01",
+								"dependsOn": [
+									"[resourceId('Microsoft.Web/sites', variables('MeetupFunction-Name'))]"
+								],
+								"properties": {
+									"netFrameworkVersion": "v4.0",
+									"phpVersion": "",
+									"pythonVersion": "",
+									"javaVersion": null,
+									"javaContainer": null,
+									"javaContainerVersion": null,
+									"use32BitWorkerProcess": false,
+									"webSocketsEnabled": false,
+									"alwaysOn": true
+								}
+							}
+						]
+					},
+		{
+			"type": "Microsoft.ServiceBus/namespaces",
+			"sku": {
+				"name": "Standard",
+				"tier": "Standard"
+			},
+			"kind": "Messaging",
+			"name": "[variables('ServiceBus-Name')]",
 			"apiVersion": "2015-08-01",
-			"type": "Microsoft.Web/sites",
-			"name": "[variables('MeetupFunction-Name')]",
 			"location": "[resourceGroup().location]",
-			"kind": "functionapp",
 			"tags": {
-				"[concat('hidden-related:', resourceId(resourceGroup().name, 'Microsoft.Web/serverfarms', variables('AppServicePlan-Name')))]": "Resource",
-				"displayName": "MeetupFunction"
+				"displayName": "ServiceBus"
 			},
-			"properties": {
-				"name": "[variables('MeetupFunction-Name')]",
-				"serverFarmId": "[resourceId(resourceGroup().name, 'Microsoft.Web/serverfarms', variables('AppServicePlan-Name'))]",
-				"clientAffinityEnabled": false
-			},
-			"dependsOn": [
-			],
 			"resources": [
 				{
-					"apiVersion": "2016-03-01",
-					"name": "appsettings",
-					"type": "config",
+					"type": "topics",
+					"name": "[variables('TopicEvents-Name')]",
+					"apiVersion": "2015-08-01",
+					"location": "[resourceGroup().location]",
 					"tags": {
-						"displayName": "ApplicationSettings"
+						"displayName": "EventsTopic"
 					},
 					"dependsOn": [
-						"[resourceId('Microsoft.Web/sites', variables('MeetupFunction-Name'))]"
+						"[resourceId('Microsoft.ServiceBus/namespaces', variables('ServiceBus-Name'))]"
 					],
 					"properties": {
-						"AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('DashboardStorage-Name'),';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('DashboardStorage-Name')), '2015-05-01-preview').key1,';')]",
-						"AzureWebJobsDashboard": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('DashboardStorage-Name'),';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('DashboardStorage-Name')), '2015-05-01-preview').key1,';')]",
-						"FUNCTIONS_EXTENSION_VERSION": "~1",
-
-						"MasterApiKey": "[parameters('MasterApiKey')]",
-						"Storage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('DataStorage-Name'),';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('DataStorage-Name')), '2015-05-01-preview').key1,';')]",
-						"ServiceBus": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/AuthorizationRules', variables('ServiceBus-Name'), 'ServiceBusMasterKey'), '2015-08-01').primaryConnectionString]",
-						"SaveFileApi": "[variables('SaveFileApi')]",
-						"MeetupODataApiEndpoint": "[variables('MeetupODataApiEndpoint')]",
-						"ApplicationApiEndpoint": "[variables('ApplicationApiEndpoint')]",
-						"TimeZone": "+2",
-						"GoogleMapsApiKey": "[parameters('GoogleMapsApiKey')]"
-					}
-				},
-				{
-					"name": "web",
-					"type": "config",
-					"apiVersion": "2015-08-01",
-					"dependsOn": [
-						"[resourceId('Microsoft.Web/sites', variables('MeetupFunction-Name'))]"
-					],
-					"properties": {
-						"netFrameworkVersion": "v4.0",
-						"phpVersion": "",
-						"pythonVersion": "",
-						"javaVersion": null,
-						"javaContainer": null,
-						"javaContainerVersion": null,
-						"use32BitWorkerProcess": false,
-						"webSocketsEnabled": false,
-						"alwaysOn": true
-					}
+						"defaultMessageTimeToLive": "14.00:00:00",
+						"maxSizeInMegabytes": 5120,
+						"requiresDuplicateDetection": false,
+						"enableBatchedOperations": true,
+						"filteringMessagesBeforePublishing": false,
+						"isAnonymousAccessible": false,
+						"supportOrdering": false,
+						"autoDeleteOnIdle": "10675199.02:48:05.4775807",
+						"enablePartitioning": true,
+						"enableSubscriptionPartitioning": false
+					},
+					"resources": [
+						{
+							"apiVersion": "2015-08-01",
+							"name": "[variables('ServiceBus-SubscriptionName')]",
+							"type": "subscriptions",
+							"dependsOn": [
+								"[variables('TopicEvents-Name')]"
+							],
+							"tags": {
+								"displayName": "Subscription"
+							},
+							"properties": {
+							},
+							"resources": [
+							]
+						}
+					]
 				}
 			]
 		}
