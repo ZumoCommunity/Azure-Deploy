@@ -36,7 +36,8 @@
 			},
 			"properties": {
 				"name": "[variables('ApplicationAPI-Name')]",
-				"serverFarmId": "[resourceId(resourceGroup().name, 'Microsoft.Web/serverfarms', variables('AppServicePlan-Name'))]"
+				"serverFarmId": "[resourceId(resourceGroup().name, 'Microsoft.Web/serverfarms', variables('AppServicePlan-Name'))]",
+				"clientAffinityEnabled": false
 			},
 			"resources": [
 				{
@@ -66,6 +67,25 @@
 						"MasterApiKey": "[parameters('MasterApiKey')]",
 						"MeetupApiEndpoint": "[parameters('MeetupApi-Endpoint')]",
 						"WEBSITE_NODE_DEFAULT_VERSION": "6.0.0"
+					}
+				},
+				{
+					"name": "web",
+					"type": "config",
+					"apiVersion": "2015-08-01",
+					"dependsOn": [
+						"[resourceId('Microsoft.Web/sites', variables('ApplicationAPI-Name'))]"
+					],
+					"properties": {
+						"netFrameworkVersion": "v4.0",
+						"phpVersion": "",
+						"pythonVersion": "",
+						"javaVersion": null,
+						"javaContainer": null,
+						"javaContainerVersion": null,
+						"use32BitWorkerProcess": false,
+						"webSocketsEnabled": false,
+						"alwaysOn": true
 					}
 				}
 			]
