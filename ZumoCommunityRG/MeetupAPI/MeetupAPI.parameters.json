@@ -4,6 +4,15 @@
     "parameters": {
         "Environment-Name": {
             "value": "Dev"
+        },
+        "SqlServer-Login": {
+            "value": ""
+        },
+        "SqlServer-Password": {
+            "value": ""
+        },
+        "MasterApiKey": {
+            "value": ""
         }
     }
 }

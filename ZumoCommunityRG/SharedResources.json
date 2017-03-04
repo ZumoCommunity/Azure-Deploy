@@ -193,7 +193,7 @@
 			"kind": "Messaging",
 			"name": "[variables('ServiceBus-Name')]",
 			"apiVersion": "2015-08-01",
-			"location": "West Europe",
+			"location": "[resourceGroup().location]",
 			"tags": {
 				"displayName": "ServiceBus"
 			},
@@ -217,7 +217,7 @@
 					"type": "topics",
 					"name": "[variables('TopicEvents-Name')]",
 					"apiVersion": "2015-08-01",
-					"location": "West Europe",
+					"location": "[resourceGroup().location]",
 					"tags": {
 						"displayName": "EventsTopic"
 					},
