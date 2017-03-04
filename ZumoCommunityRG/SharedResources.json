@@ -47,7 +47,7 @@
 
 		"ServiceBus-Name": "[concat('ServiceBus-', parameters('Environment-Name'))]",
 
-		"TopicEvents-Name": "Events"
+		"TopicEvents-Name": "events"
 	},
 	"resources": [
 		{

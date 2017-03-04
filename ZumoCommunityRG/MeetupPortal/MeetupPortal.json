@@ -34,8 +34,8 @@
 		"ApplicationApiEndpoint": "[concat('http://MeetupPortal-', parameters('Environment-Name'), '/api/v1')]",
 
 		"ServiceBus-Name": "[concat('ServiceBus-', parameters('Environment-Name'))]",
-		"TopicEvents-Name": "Events",
-		"ServiceBus-SubscriptionName": "MeetupPortal"
+		"TopicEvents-Name": "events",
+		"ServiceBus-SubscriptionName": "meetup-portal"
 	},
 	"resources": [
 		{
