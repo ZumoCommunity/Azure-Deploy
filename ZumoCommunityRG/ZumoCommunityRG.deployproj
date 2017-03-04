@@ -25,6 +25,7 @@
   <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
   <!-- vertag<:>end -->
   <ItemGroup>
+    <Content Include="MeetupPortal\MeetupPortal.parameters.json" />
     <Content Include="SharedResources.json" />
     <Content Include="SharedResources.parameters.json" />
     <None Include="ApplicationAPI\ApplicationAPI.json" />

@@ -35,12 +35,19 @@
 		"DataStorage-Name": "[take(toLower(concat('data', parameters('Environment-Name'), variables('UniqueId'))), 24)]",
 		"DataStorage-Type": "Standard_LRS",
 
+		"DashboardStorage-Name": "[take(toLower(concat('dashboard', parameters('Environment-Name'), variables('UniqueId'))), 24)]",
+		"DashboardStorage-Type": "Standard_LRS",
+
 		"CdnProfile-Name": "[concat('CdnProfile-', parameters('Environment-Name'))]",
 
 		"CdnEndpoint-Name": "[concat('CdnEndpoint-', parameters('Environment-Name'), '-', variables('UniqueId'))]",
 		"CdnEndpoint-OriginUrl": "[concat(variables('ContentStorage-Name'), '.blob.core.windows.net')]",
 
-		"SqlServer-Name": "[toLower(concat('sqlserver-', parameters('Environment-Name'), '-', variables('UniqueId')))]"
+		"SqlServer-Name": "[toLower(concat('sqlserver-', parameters('Environment-Name'), '-', variables('UniqueId')))]",
+
+		"ServiceBus-Name": "[concat('ServiceBus-', parameters('Environment-Name'))]",
+
+		"TopicEvents-Name": "Events"
 	},
 	"resources": [
 		{
@@ -84,6 +91,19 @@
 			},
 			"properties": {
 				"accountType": "[variables('DataStorage-Type')]"
+			}
+		},
+		{
+			"name": "[variables('DashboardStorage-Name')]",
+			"type": "Microsoft.Storage/storageAccounts",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2015-06-15",
+			"dependsOn": [],
+			"tags": {
+				"displayName": "DashboardStorage"
+			},
+			"properties": {
+				"accountType": "[variables('DashboardStorage-Type')]"
 			}
 		},
 		{
@@ -163,7 +183,67 @@
 					}
 				}
 			]
+		},
+		{
+			"type": "Microsoft.ServiceBus/namespaces",
+			"sku": {
+				"name": "Standard",
+				"tier": "Standard"
+			},
+			"kind": "Messaging",
+			"name": "[variables('ServiceBus-Name')]",
+			"apiVersion": "2015-08-01",
+			"location": "West Europe",
+			"tags": {
+				"displayName": "ServiceBus"
+			},
+			"resources": [
+				{
+					"type": "AuthorizationRules",
+					"name": "ServiceBusMasterKey",
+					"apiVersion": "2015-08-01",
+					"dependsOn": [
+						"[resourceId('Microsoft.ServiceBus/namespaces', variables('ServiceBus-Name'))]"
+					],
+					"properties": {
+						"rights": [
+							"Listen",
+							"Manage",
+							"Send"
+						]
+					}
+				},
+				{
+					"type": "topics",
+					"name": "[variables('TopicEvents-Name')]",
+					"apiVersion": "2015-08-01",
+					"location": "West Europe",
+					"tags": {
+						"displayName": "EventsTopic"
+					},
+					"dependsOn": [
+						"[resourceId('Microsoft.ServiceBus/namespaces', variables('ServiceBus-Name'))]"
+					],
+					"properties": {
+						"defaultMessageTimeToLive": "14.00:00:00",
+						"maxSizeInMegabytes": 5120,
+						"requiresDuplicateDetection": false,
+						"enableBatchedOperations": true,
+						"filteringMessagesBeforePublishing": false,
+						"isAnonymousAccessible": false,
+						"supportOrdering": false,
+						"autoDeleteOnIdle": "10675199.02:48:05.4775807",
+						"enablePartitioning": true,
+						"enableSubscriptionPartitioning": false
+					}
+				}
+			]
 		}
 	],
-	"outputs": {}
+	"outputs": {
+		"ServiceBusPrimaryConnectionString": {
+			"value": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/AuthorizationRules', variables('ServiceBus-Name'), 'ServiceBusMasterKey'), '2015-08-01').primaryConnectionString]",
+			"type": "string"
+		}
+	}
 }
